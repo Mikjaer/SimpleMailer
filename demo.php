@@ -3,7 +3,7 @@
     include("../SimpleTpl/SimpleTpl.class.php");
     #include("Smarty.class.php");
 
-    $mail = new Mailer();
+    $mail = new SimpleMailer();
 
     if (!$mail->from("noreply@leandns.com","LeanDNS Security Log"))
         die("Invalid E-Mail");

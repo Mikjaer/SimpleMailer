@@ -1,6 +1,6 @@
 <?php
 
-    class Mailer
+    class SimpleMailer
     {
         private $from, $to;
 
