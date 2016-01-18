@@ -3,6 +3,7 @@
     class SimpleMailer
     {
         private $from, $to;
+	private $attachments = array();
 
         private function validateEmail($email)
         {
@@ -84,6 +85,16 @@
             $this->tpl->assign($key, $value);
         }
 
+	public function attachfile($uri, $filename, $type)
+	{
+		return $this->attach(file_get_contents($uri), $filename, $type);
+	}
+
+	public function attach($content, $filename, $type)
+	{
+		$this->attachments[] = array("content"=>$content, "filename"=>$filename, "type"=>$type);
+	}
+
         public function send()
         {
             $headers="";
@@ -98,23 +109,47 @@
 
                 # Message specific headers
 
-            if ((isset($this->template["html"])) and (isset($this->template["plain"])))    // Multimime
+            if ((isset($this->template["html"])) and (isset($this->template["plain"])) or ($this->attachments))    // Multimime
             {
                 $boundary=md5(uniqid(rand()));
                 
-                $headers .= 'MIME-Version: 1.0'."\r\n";
-                $headers .= "Content-type: multipart/alternative;boundary=$boundary \n";
+          //      $headers .= 'MIME-Version: 1.0'."\r\n";
+                $headers .= "Content-type: multipart/mixed; boundary=\"mix-$boundary\"\n";
 
-                $message = "This is multipart message using MIME\n";
-                $message .= "--" . $boundary . "\n";
-                $message .= "Content-type: text/plain;charset=iso-8859-1\n";
-                $message .= "Content-Transfer-Encoding: 7bit". "\n\n";
-                $message .= $this->tpl->fetch($this->template["plain"]); 
-                $message .= "--" . $boundary . "\n";
-                $message .= "Content-type: text/html;charset=iso-8859-1\n";
-                $message .= "Content-Transfer-Encoding: 7bit". "\n\n";
-                $message .= $this->tpl->fetch($this->template["html"]);
-                $message .= "--" . $boundary . "--";
+         //       $message = "This is multipart message using MIME\n";
+
+		$message .= "--mix-" . $boundary . "\n";
+                $message .= 'Content-Type: multipart/alternative; boundary="alt-'.$boundary."\"\n\n";
+		if ($this->template["plain"])
+		{
+			$message .= "--alt-" . $boundary . "\n";
+                	$message .= "Content-type: text/plain;charset=iso-8859-1\n";
+                	$message .= "Content-Transfer-Encoding: 7bit". "\n\n";
+                	$message .= $this->tpl->fetch($this->template["plain"]); 
+                }
+
+		if ($this->template["html"])
+		{
+			$message .= "--alt-" . $boundary . "\n";
+                	$message .= "Content-type: text/html;charset=iso-8859-1\n";
+                	$message .= "Content-Transfer-Encoding: 7bit". "\n\n";
+                	$message .= $this->tpl->fetch($this->template["html"]);
+                }
+
+		$message .= "--alt-" . $boundary . "--\n";
+
+		foreach ($this->attachments as $a)
+		{
+			$message .= "--mix-" . $boundary . "\n";
+ 			$message .= "Content-Type: ".$a["type"]."; name=\"" . $a["filename"] . "\"" . "\n";
+     			$message .= "Content-Transfer-Encoding: base64" . "\n";
+         		$message .= "Content-Disposition: attachment" . "\n\n";
+			$message .= base64_encode($a["content"]);
+			$message .= "\n";
+		}
+		
+		#$message .= "--" . $boundary . "--";
+		$message .= "--mix-" . $boundary . "--";
             } else if (isset($this->template["html"]))  // HTML
             {
                 $headers .= 'MIME-Version: 1.0' . "\r\n";
@@ -128,9 +163,9 @@
 
             foreach ($this->to as $r)
             {
-	            $to = "To: $r[fullname] <$r[email]> \r\n"; 
+	        $to = "To: $r[fullname] <$r[email]> \r\n"; 
                 mail($r["email"],$this->subject,$message,$to.$headers);
-            }
+	    }
 
         }
     }
