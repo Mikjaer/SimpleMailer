@@ -58,6 +58,10 @@
             {
                 $this->tpl = new SimpleTpl();
             }
+	    else if (class_exists("\Mikjaer\SimpleTpl\SimpleTpl"))
+            {
+ 		$this->tpl = new \Mikjaer\SimpleTpl\SimpleTpl();
+            }
             else if (class_exists("Smarty"))
             {
                 $this->tpl = new Smarty();
@@ -97,7 +101,7 @@
 
         public function send()
         {
-            $headers="";
+            $message = $headers="";
 
                 # Global Headers
 
