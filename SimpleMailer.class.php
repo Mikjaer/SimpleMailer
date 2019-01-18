@@ -117,7 +117,7 @@
             {
                 $boundary=md5(uniqid(rand()));
                 
-          //      $headers .= 'MIME-Version: 1.0'."\r\n";
+                $headers .= 'MIME-Version: 1.0'."\r\n";
                 $headers .= "Content-type: multipart/mixed; boundary=\"mix-$boundary\"\n";
 
          //       $message = "This is multipart message using MIME\n";
