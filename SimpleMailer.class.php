@@ -103,31 +103,31 @@
         {
             $message = $headers="";
 
-                # Global Headers
+            # Global Headers
+            $headers .= 'MIME-Version: 1.0'."\r\n";
 
-		    if (isset($this->from)) // From-header
+	    if (isset($this->from)) // From-header
                 $headers .= 'From: '.$this->from["fullname"].' <'.$this->from["email"].'>' . "\r\n";
             
             if (isset($this->replyto)) // Replyto-header
                 $headers .= 'Reply-To: '.$this->replyto["fullname"].' <'.$this->replyto["email"].'>' . "\r\n";
 
-                # Message specific headers
+            # Message specific headers
 
             if ((isset($this->template["html"])) and (isset($this->template["plain"])) or ($this->attachments))    // Multimime
             {
                 $boundary=md5(uniqid(rand()));
                 
-                $headers .= 'MIME-Version: 1.0'."\r\n";
-                $headers .= "Content-type: multipart/mixed; boundary=\"mix-$boundary\"\n";
+            ##    $headers .= "Content-type: multipart/mixed; boundary=\"mix-$boundary\"\n";
 
          //       $message = "This is multipart message using MIME\n";
 
-		$message .= "--mix-" . $boundary . "\n";
+	#	$message .= "--mix-" . $boundary . "\n";
                 $message .= 'Content-Type: multipart/alternative; boundary="alt-'.$boundary."\"\n\n";
 		if ($this->template["plain"])
 		{
 			$message .= "--alt-" . $boundary . "\n";
-                	$message .= "Content-type: text/plain;charset=iso-8859-1\n";
+		        $headers .= 'Content-type: text/plain;charset=UTF-8' . "\r\n";
                 	$message .= "Content-Transfer-Encoding: 7bit". "\n\n";
                 	$message .= $this->tpl->fetch($this->template["plain"]); 
                 }
@@ -135,7 +135,7 @@
 		if ($this->template["html"])
 		{
 			$message .= "--alt-" . $boundary . "\n";
-                	$message .= "Content-type: text/html;charset=iso-8859-1\n";
+                	$message .= "Content-type: text/html;charset=UTF-8\n";
                 	$message .= "Content-Transfer-Encoding: 7bit". "\n\n";
                 	$message .= $this->tpl->fetch($this->template["html"]);
                 }
@@ -157,9 +157,11 @@
             } else if (isset($this->template["html"]))  // HTML
             {
                 $headers .= 'MIME-Version: 1.0' . "\r\n";
-		        $headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+		$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
                 $message = $this->tpl->fetch($this->template["html"]);
             } else {    // Plain
+                $headers .= 'MIME-Version: 1.0' . "\r\n";
+		$headers .= 'Content-type: text/plain; charset=UTF-8' . "\r\n";
                 $message = $this->tpl->fetch($this->template["plain"]);
             }   
 
@@ -167,8 +169,8 @@
 
             foreach ($this->to as $r)
             {
-	        $to = "To: $r[fullname] <$r[email]> \r\n"; 
-                mail($r["email"],$this->subject,$message,$to.$headers);
+	        #$to = "To: $r[fullname] <$r[email]> \r\n"; 
+                mail($r["fullname"]. "<".$r["email"].">",$this->subject,$message,$headers);
 	    }
 
         }
