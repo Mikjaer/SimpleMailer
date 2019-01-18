@@ -120,21 +120,27 @@
                 
             ##    $headers .= "Content-type: multipart/mixed; boundary=\"mix-$boundary\"\n";
 
-         //       $message = "This is multipart message using MIME\n";
 
-	#	$message .= "--mix-" . $boundary . "\n";
-                $message .= 'Content-Type: multipart/alternative; boundary="alt-'.$boundary."\"\n\n";
+                
+                $headers .= 'Content-Type: multipart/alternative;boundary="alt-'.$boundary."\"\r\n";
+		
+                if (($this->template["plain"]) and ($this->template["html"]))
+                {
+                    $message = "This is multipart message using MIME\n";
+#	            $message .= "\r\n\r\n--alt-" . $boundary . "\r\n";
+                
+                }
 		if ($this->template["plain"])
 		{
-			$message .= "--alt-" . $boundary . "\n";
-		        $headers .= 'Content-type: text/plain;charset=UTF-8' . "\r\n";
+			$message .= "\r\n\r\n--alt-" . $boundary . "\r\n";
+		        $message .= 'Content-type: text/plain;charset=UTF-8' . "\r\n";
                 	$message .= "Content-Transfer-Encoding: 7bit". "\n\n";
                 	$message .= $this->tpl->fetch($this->template["plain"]); 
                 }
 
 		if ($this->template["html"])
 		{
-			$message .= "--alt-" . $boundary . "\n";
+			$message .= "\r\n\r\n--alt-" . $boundary . "\r\n";
                 	$message .= "Content-type: text/html;charset=UTF-8\n";
                 	$message .= "Content-Transfer-Encoding: 7bit". "\n\n";
                 	$message .= $this->tpl->fetch($this->template["html"]);
@@ -156,13 +162,13 @@
 		$message .= "--mix-" . $boundary . "--";
             } else if (isset($this->template["html"]))  // HTML
             {
-                $headers .= 'MIME-Version: 1.0' . "\r\n";
-		$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-                $message = $this->tpl->fetch($this->template["html"]);
+#                $headers .= 'MIME-Version: 1.0' . "\r\n";
+#		$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+ #               $message = $this->tpl->fetch($this->template["html"]);
             } else {    // Plain
-                $headers .= 'MIME-Version: 1.0' . "\r\n";
-		$headers .= 'Content-type: text/plain; charset=UTF-8' . "\r\n";
-                $message = $this->tpl->fetch($this->template["plain"]);
+  #              $headers .= 'MIME-Version: 1.0' . "\r\n";
+#		$headers .= 'Content-type: text/plain; charset=UTF-8' . "\r\n";
+ #               $message = $this->tpl->fetch($this->template["plain"]);
             }   
 
                 # Send the messages
